@@ -16,35 +16,40 @@ export class App extends Component {
     showModal: false,
     isLoading: false,
     modalImage: null,
+    error: null,
   };
 
   componentDidUpdate = async (prevProps, prevState) => {
-    const { page, searchQuery } = this.state;
+    try {
+      const { page, searchQuery } = this.state;
 
-    if (searchQuery.trim() === '') {
-      return;
-    }
+      if (searchQuery.trim() === '') {
+        return;
+      }
 
-    if (
-      prevState.searchQuery.trim() !== searchQuery.trim() ||
-      prevState.page !== page
-    ) {
-      const fetchImages = await getFetchImages(searchQuery, page);
+      if (
+        prevState.searchQuery.trim() !== searchQuery.trim() ||
+        prevState.page !== page
+      ) {
+        const fetchImages = await getFetchImages(searchQuery, page);
 
-      const requiredPropertiesImages = fetchImages.hits.map(
-        ({ id, webformatURL, largeImageURL, tags }) => ({
-          id,
-          webformatURL,
-          largeImageURL,
-          tags,
-        })
-      );
+        const requiredPropertiesImages = fetchImages.hits.map(
+          ({ id, webformatURL, largeImageURL, tags }) => ({
+            id,
+            webformatURL,
+            largeImageURL,
+            tags,
+          })
+        );
 
-      this.setState(prevState => ({
-        images: [...prevState.images, ...requiredPropertiesImages],
-        isLoading: false,
-        totalPages: Math.ceil(fetchImages.total / 12),
-      }));
+        this.setState(prevState => ({
+          images: [...prevState.images, ...requiredPropertiesImages],
+          isLoading: false,
+          totalPages: Math.ceil(fetchImages.total / 12),
+        }));
+      }
+    } catch (error) {
+      this.setState({ error });
     }
   };
 
@@ -81,10 +86,15 @@ export class App extends Component {
       image => image.id === imageId
     ).largeImageURL;
 
-    this.setState({
-      showModal: true,
-      modalImage: largeImage,
-    });
+    this.setState({ isLoading: true });
+
+    setTimeout(() => {
+      this.setState({
+        showModal: true,
+        modalImage: largeImage,
+        isLoading: false,
+      });
+    }, 300);
   };
 
   closeModal = () => {
@@ -102,12 +112,14 @@ export class App extends Component {
       showModal,
       isLoading,
       modalImage,
+      error,
     } = this.state;
 
     return (
       <>
         <Box display="grid" gridTemplateColumns="1fr" gridGap="16px" pb="24px">
           <Searchbar onSubmit={this.handleSearchbarSubmit} />
+          {error && <p>Seems like something went wrong :( {error.message}</p>}
           {isLoading && <Loader />}
           {images.length > 0 && (
             <>
