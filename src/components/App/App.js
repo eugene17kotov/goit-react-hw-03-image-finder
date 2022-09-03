@@ -25,8 +25,6 @@ export class App extends Component {
       return;
     }
 
-    console.log('GO');
-
     if (
       prevState.searchQuery.trim() !== searchQuery.trim() ||
       prevState.page !== page
@@ -52,24 +50,26 @@ export class App extends Component {
 
   handleSearchbarSubmit = event => {
     event.preventDefault();
+    const inputValue = event.target.elements.search.value.trim();
+    const { searchQuery } = this.state;
+
+    if (inputValue === '') {
+      this.setState({ searchQuery: '', page: 1, images: [] });
+      return;
+    }
+
+    if (inputValue === searchQuery) {
+      return;
+    }
 
     this.setState({
-      searchQuery: '',
-    });
-
-    this.setState({
-      searchQuery: event.target.elements.search.value,
+      isLoading: true,
+      searchQuery: inputValue,
       page: 1,
       images: [],
     });
 
     event.target.reset();
-
-    if (this.state.searchQuery.trim() !== '') {
-      this.setState({
-        isLoading: true,
-      });
-    }
   };
 
   handleLoadMoreButton = () => {
