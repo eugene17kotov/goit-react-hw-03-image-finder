@@ -77,10 +77,13 @@ export class App extends Component {
   };
 
   openModal = imageId => {
+    const largeImage = this.state.images.find(
+      image => image.id === imageId
+    ).largeImageURL;
+
     this.setState({
       showModal: true,
-      modalImage: this.state.images.find(image => image.id === imageId)
-        .largeImageURL,
+      modalImage: largeImage,
     });
   };
 
@@ -108,10 +111,7 @@ export class App extends Component {
           {isLoading && <Loader />}
           {images.length > 0 && (
             <>
-              <ImageGallery
-                images={this.state.images}
-                openModal={this.openModal}
-              />
+              <ImageGallery images={images} openModal={this.openModal} />
               <Box display="flex" justifyContent="center">
                 <Button
                   onFetchMore={this.handleLoadMoreButton}
